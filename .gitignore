@@ -1,3 +1,5 @@
 /totaloutput.zip
 
-bigdataproject/*.csv
+totaloutput/*.csv
+
+__pycache__/*.csv
