@@ -2,4 +2,4 @@
 
 totaloutput/*.csv
 
-__pycache__/*.csv
+pycache/__pycache__/*.csv
