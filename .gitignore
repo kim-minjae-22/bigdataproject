@@ -3,3 +3,5 @@
 totaloutput/*.csv
 
 pycache/__pycache__/*.csv
+
+/평가데이터_2.2kW/**/*.csv
