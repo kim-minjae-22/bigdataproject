@@ -1,0 +1,84 @@
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
+
+# 한글 폰트 설정 (필요한 경우)
+plt.rcParams['font.family'] = 'Malgun Gothic'  # 윈도우
+plt.rcParams['axes.unicode_minus'] = False  # 마이너스 기호 깨짐 방지
+
+# 저장 경로 설정
+output_dir = r"C:\Users\human\Desktop\프로젝트 관련\이미지들\L-EF-04"  # 저장할 디렉토리 경로
+os.makedirs(output_dir, exist_ok=True)  # 디렉토리가 없으면 생성
+
+# 불량 유형 비율 시각화
+def visualize_defect_ratios(result_df, output_dir):
+    for model in ['XGB', 'RDF']:
+        # 불량 유형 비율 계산
+        defect_counts = result_df[f'{model} Prediction Label'].value_counts()
+        defect_labels = defect_counts.index
+        defect_values = defect_counts.values
+        total = sum(defect_values)
+
+        # 막대그래프
+        plt.figure(figsize=(10, 6))
+        barplot = sns.barplot(x=defect_labels, y=defect_values, palette="viridis")
+        plt.title(f"{model} Model - 예측 결과 분포", fontsize=16)
+        plt.xlabel("예측 라벨", fontsize=14)
+        plt.ylabel("파일 개수", fontsize=14)
+        plt.xticks(fontsize=12)
+        plt.yticks(fontsize=12)
+
+        # 비율 표시
+        for p in barplot.patches:
+            height = p.get_height()
+            percentage = (height / total) * 100
+            barplot.text(p.get_x() + p.get_width() / 2., height + 1, f'{percentage:.1f}%', 
+                         ha="center", fontsize=12)
+
+        # 저장
+        bar_output_path = os.path.join(output_dir, f"{model}_Prediction_Bar.jpg")
+        plt.savefig(bar_output_path, format="jpg", dpi=300)
+        print(f"Saved bar chart: {bar_output_path}")
+        plt.close()
+
+        # 파이차트
+        plt.figure(figsize=(8, 8))
+        plt.pie(defect_values, labels=defect_labels, autopct='%1.1f%%', startangle=140, colors=sns.color_palette("viridis", len(defect_labels)))
+        plt.title(f"{model} Model - 예측 결과 비율", fontsize=16)
+
+        # 저장
+        pie_output_path = os.path.join(output_dir, f"{model}_Prediction_Pie.jpg")
+        plt.savefig(pie_output_path, format="jpg", dpi=300)
+        print(f"Saved pie chart: {pie_output_path}")
+        plt.close()
+
+# 모델 간 결과 비교 시각화
+def visualize_model_comparison(result_df, output_dir):
+    # 예측 비교용 DataFrame 생성 (XGB와 RDF 모델의 예측 결과 비교)
+    comparison = result_df.groupby(['XGB Prediction Label', 'RDF Prediction Label']).size().reset_index(name='Count')
+
+    # 열 이름 변경
+    comparison.columns = ['XGB Prediction Label', 'RDF Prediction Label', 'Count']
+    
+    # 히트맵 시각화
+    plt.figure(figsize=(12, 8))
+    sns.heatmap(comparison.pivot(index="XGB Prediction Label", columns="RDF Prediction Label", values="Count"),
+                annot=True, fmt='.0f', cmap='Blues')  # 실수일 경우 .0f로 수정
+    plt.title("XGBoost와 RandomForest 모델의 예측 결과 비교", fontsize=16)
+    plt.xlabel("RandomForest Prediction", fontsize=14)
+    plt.ylabel("XGBoost Prediction", fontsize=14)
+    plt.tight_layout()
+
+    # 저장
+    heatmap_output_path = os.path.join(output_dir, "Model_Comparison_Heatmap.jpg")
+    plt.savefig(heatmap_output_path, format="jpg", dpi=300)
+    print(f"Saved heatmap: {heatmap_output_path}")
+    plt.close()
+
+# 예시 result_df (실제 데이터로 교체해야 합니다)
+# result_df = pd.read_csv('your_data.csv')
+
+# 함수 실행
+visualize_defect_ratios(result_df, output_dir)  # 불량 유형 비율 시각화 및 저장
+visualize_model_comparison(result_df, output_dir)  # 모델 간 예측 비교 시각화 및 저장
+
